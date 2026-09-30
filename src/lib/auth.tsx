@@ -7,7 +7,7 @@ import {
   updateProfile,
   type User,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, query, setDoc } from "firebase/firestore";
 import { firebaseAuth, firestore } from "@/integrations/firebase/client";
 
 export type Perfil = "admin" | "equipe" | "visualizador";
@@ -122,6 +122,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
         if (nome.trim()) await updateProfile(cred.user, { displayName: nome.trim() });
+
+        const existing = await getDocs(query(collection(firestore, "usuarios_crm"), limit(1)));
+        const perfil: Perfil = existing.empty ? "admin" : "visualizador";
+        await setDoc(doc(firestore, "usuarios_crm", cred.user.uid), {
+          nome: nome.trim() || null,
+          email: cred.user.email,
+          perfil,
+          ativo: true,
+          criado_em: new Date().toISOString(),
+          atualizado_em: new Date().toISOString(),
+        });
+
         return { error: null };
       } catch (e) {
         return { error: e instanceof Error ? e.message : "Falha ao criar conta" };
