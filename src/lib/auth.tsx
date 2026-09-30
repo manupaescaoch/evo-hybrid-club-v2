@@ -1,6 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { firebaseAuth, firestore } from "@/integrations/firebase/client";
 
 export type Perfil = "admin" | "equipe" | "visualizador";
 
@@ -12,9 +20,14 @@ export interface CrmUser {
   ativo: boolean;
 }
 
+export type FirebaseSession = {
+  access_token: string;
+  user: User;
+};
+
 interface AuthCtx {
   loading: boolean;
-  session: Session | null;
+  session: FirebaseSession | null;
   user: User | null;
   crmUser: CrmUser | null;
   isAdmin: boolean;
@@ -28,84 +41,99 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+async function buildSession(user: User | null): Promise<FirebaseSession | null> {
+  if (!user) return null;
+  return { access_token: await user.getIdToken(), user };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<FirebaseSession | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [crmUser, setCrmUser] = useState<CrmUser | null>(null);
 
   const loadCrmUser = async (uid: string | undefined) => {
-    if (!uid) { setCrmUser(null); return; }
-    const { data } = await supabase.from("usuarios_crm").select("*").eq("id", uid).maybeSingle();
-    setCrmUser((data as CrmUser) ?? null);
+    if (!uid) {
+      setCrmUser(null);
+      return;
+    }
+    const snap = await getDoc(doc(firestore, "usuarios_crm", uid));
+    setCrmUser(snap.exists() ? ({ id: snap.id, ...snap.data() } as CrmUser) : null);
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setTimeout(() => { void loadCrmUser(s?.user?.id); }, 0);
-    });
-    void supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      await loadCrmUser(data.session?.user?.id);
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (nextUser) => {
+      setUser(nextUser);
+      setSession(await buildSession(nextUser));
+      await loadCrmUser(nextUser?.uid);
       setLoading(false);
     });
-    return () => sub.subscription.unsubscribe();
+    return unsubscribe;
   }, []);
 
-  // Inject Authorization: Bearer <token> on every server-fn request
   useEffect(() => {
     if (typeof window === "undefined") return;
     const w = window as unknown as { __serverFnFetchPatched?: boolean };
     if (w.__serverFnFetchPatched) return;
     w.__serverFnFetchPatched = true;
+
     const originalFetch = window.fetch.bind(window);
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       try {
-        const url = typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : (input as Request).url;
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : (input as Request).url;
         if (url.includes("/_serverFn/")) {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token;
+          const current = firebaseAuth.currentUser;
+          const token = current ? await current.getIdToken() : null;
           if (token) {
             const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
-            if (!headers.has("authorization")) {
-              headers.set("authorization", `Bearer ${token}`);
-            }
+            if (!headers.has("authorization")) headers.set("authorization", `Bearer ${token}`);
             return originalFetch(input, { ...init, headers });
           }
         }
       } catch {
-        // fall through to original fetch
+        // fallback para fetch original
       }
       return originalFetch(input, init);
     };
   }, []);
 
   const value: AuthCtx = {
-    loading, session, user, crmUser,
+    loading,
+    session,
+    user,
+    crmUser,
     isAdmin: crmUser?.perfil === "admin",
     isEquipe: crmUser?.perfil === "equipe",
     canEdit: crmUser?.perfil === "admin" || crmUser?.perfil === "equipe",
     signIn: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error: error?.message ?? null };
+      try {
+        await signInWithEmailAndPassword(firebaseAuth, email, password);
+        return { error: null };
+      } catch (e) {
+        return { error: e instanceof Error ? e.message : "Falha ao entrar" };
+      }
     },
     signUp: async (email, password, nome) => {
-      const redirectUrl = `${window.location.origin}/visao-geral`;
-      const { error } = await supabase.auth.signUp({
-        email, password,
-        options: { emailRedirectTo: redirectUrl, data: { nome } },
-      });
-      return { error: error?.message ?? null };
+      try {
+        const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        if (nome.trim()) await updateProfile(cred.user, { displayName: nome.trim() });
+        return { error: null };
+      } catch (e) {
+        return { error: e instanceof Error ? e.message : "Falha ao criar conta" };
+      }
     },
-    signOut: async () => { await supabase.auth.signOut(); },
-    refresh: async () => { await loadCrmUser(user?.id); },
+    signOut: async () => {
+      await firebaseSignOut(firebaseAuth);
+    },
+    refresh: async () => {
+      await loadCrmUser(firebaseAuth.currentUser?.uid);
+      setSession(await buildSession(firebaseAuth.currentUser));
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
