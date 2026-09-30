@@ -172,6 +172,7 @@ export function HybridWorkoutBuilder({ alunoId }: { alunoId: string }) {
         .select("*, corrida_sessao_blocos(*)")
         .eq("aluno_id", alunoId)
         .eq("data", data)
+        .eq("tipo", "cross")
         .order("ordem_no_dia")
         .limit(1);
       if (error) throw error;
