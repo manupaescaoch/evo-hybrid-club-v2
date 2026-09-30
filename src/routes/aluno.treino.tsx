@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getSemanaTreinoAluno, type AlunoTreinoSessao, type AlunoTreinoBloco } from "@/backend/aluno-treino.functions";
+import { getRankingHybrid, salvarResultadoHybrid } from "@/backend/hybrid-results.functions";
 import { paceToKmh } from "@/lib/corrida-zonas";
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Trophy,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -400,58 +402,159 @@ function SessaoCard({ s, feitos, toggle }: { s: AlunoTreinoSessao; feitos: Set<s
       >
         <div className="inline-flex items-center gap-1.5 rounded-full bg-[#0033FF]/10 px-2.5 py-1">
           <Footprints className="h-3 w-3 text-[#0033FF]" />
-          <span className="text-[10px] font-extrabold tracking-[0.14em] text-[#0033FF] uppercase">{s.tipo}</span>
+          <span className="text-[10px] font-extrabold tracking-[0.14em] text-[#0033FF] uppercase">{s.categoria || s.tipo}</span>
         </div>
         <h2 className="mt-2.5 text-[19px] font-extrabold leading-tight text-black">{s.nome}</h2>
-        {s.pace_alvo && (
-          <p className="mt-0.5 text-[12px] text-black/55">
-            Pace alvo: {s.pace_alvo} /km{paceToKmh(s.pace_alvo) ? ` · ${paceToKmh(s.pace_alvo)} km/h` : ""}
-          </p>
-        )}
         {s.objetivo && <p className="mt-1 text-[12px] text-black/60">{s.objetivo}</p>}
-        <div className="mt-3 flex items-center gap-4 text-[12px] text-black/70">
-          {s.duracao_min != null && (
-            <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-black/50" /><span className="font-semibold">{s.duracao_min} min</span></span>
-          )}
-          {s.distancia_km != null && (
-            <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-black/50" /><span className="font-semibold">{Number(s.distancia_km)} km</span></span>
-          )}
-          {s.zona_fc && (
-            <span className="inline-flex items-center gap-1"><Flame className="h-3.5 w-3.5 text-black/50" /><span className="font-semibold">{s.zona_fc}</span></span>
-          )}
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-black/55">
+          {s.unidade && <span>{s.unidade}</span>}
+          {s.duracao_min != null && <span>{s.duracao_min} min</span>}
+          {s.distancia_km != null && <span>{Number(s.distancia_km)} km</span>}
         </div>
         {s.observacao && <p className="mt-2 text-[11px] text-black/55">{s.observacao}</p>}
       </motion.section>
+
       <ul className="space-y-2">
         {(s.blocos ?? []).map((b, i) => {
           const done = feitos.has(b.id);
+          const prescription = b.prescricao || b.descricao || "";
           return (
             <motion.li
               key={b.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.04 * i }}
-              className="rounded-2xl bg-white ring-1 ring-black/5 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.18)] flex items-center gap-3 p-3"
+              className="rounded-2xl bg-white ring-1 ring-black/5 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.18)] p-4"
             >
-              <div className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center text-[12px] font-extrabold tabular-nums ${done ? "bg-[#22C55E]/10 text-[#16a34a]" : "bg-black/5 text-black/60"}`}>
-                {String(i + 1).padStart(2, "0")}
+              <div className="flex items-start gap-3">
+                <div className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center text-[12px] font-extrabold tabular-nums ${done ? "bg-[#22C55E]/10 text-[#16a34a]" : "bg-black/5 text-black/60"}`}>
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[9px] font-extrabold tracking-[0.12em] text-[#0033FF] uppercase">{b.tipo}</span>
+                    {b.formato && <span className="text-[9px] font-extrabold rounded-full bg-black/5 px-2 py-0.5 text-black/60">{b.formato}</span>}
+                  </div>
+                  <p className="text-[14px] font-extrabold text-black leading-tight mt-1">{b.nome}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggle(b.id)}
+                  aria-label={done ? "Desmarcar bloco" : "Marcar bloco concluído"}
+                  className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition active:scale-90 ${done ? "bg-[#22C55E]" : "border-2 border-black/15 bg-white"}`}
+                >
+                  {done && <Check className="h-4 w-4 text-white" strokeWidth={3.5} />}
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-extrabold text-black leading-tight">{b.nome}</p>
-                <p className="text-[11px] text-black/55 mt-0.5">{descBloco(b)}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => toggle(b.id)}
-                aria-label={done ? "Desmarcar bloco" : "Marcar bloco concluído"}
-                className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition active:scale-90 ${done ? "bg-[#22C55E]" : "border-2 border-black/15 bg-white"}`}
-              >
-                {done && <Check className="h-4 w-4 text-white" strokeWidth={3.5} />}
-              </button>
+
+              {prescription && <p className="mt-3 whitespace-pre-wrap text-[12px] leading-relaxed text-black/75">{prescription}</p>}
+              {b.orientacoes && (
+                <div className="mt-3 rounded-xl bg-[#0033FF]/5 px-3 py-2">
+                  <p className="text-[9px] font-extrabold tracking-[0.12em] text-[#0033FF] uppercase">Orientações</p>
+                  <p className="text-[11px] text-black/65 mt-1">{b.orientacoes}</p>
+                </div>
+              )}
+
+              {b.resultado_habilitado && (
+                <BlockResult sessaoId={s.id} bloco={b} />
+              )}
             </motion.li>
           );
         })}
       </ul>
+
+      {s.resultado_geral_habilitado && (
+        <div className="rounded-2xl bg-white ring-1 ring-black/5 p-4">
+          <p className="text-[10px] font-extrabold tracking-[0.14em] text-black/45 uppercase">Resultado geral do treino</p>
+          <BlockResult
+            sessaoId={s.id}
+            bloco={null}
+            tipoResultado={s.resultado_geral_tipo || "Tempo"}
+            unidade={s.resultado_geral_unidade || ""}
+            ranking
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BlockResult({
+  sessaoId,
+  bloco,
+  tipoResultado,
+  unidade,
+  ranking,
+}: {
+  sessaoId: string;
+  bloco: AlunoTreinoBloco | null;
+  tipoResultado?: string;
+  unidade?: string;
+  ranking?: boolean;
+}) {
+  const saveResult = useServerFn(salvarResultadoHybrid);
+  const fetchRanking = useServerFn(getRankingHybrid);
+  const [value, setValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [rankData, setRankData] = useState<{ posicao: number | null; total: number } | null>(null);
+  const resultType = bloco?.tipo_resultado || tipoResultado || "Pontuação";
+  const unit = bloco?.unidade_resultado || unidade || "";
+  const rankingEnabled = bloco ? !!bloco.ranking_habilitado : !!ranking;
+
+  const submit = async () => {
+    if (!value.trim()) return;
+    setSaving(true);
+    try {
+      const normalized = value.replace(",", ".");
+      const numeric = Number(normalized);
+      await saveResult({
+        data: {
+          sessaoId,
+          blocoId: bloco?.id ?? null,
+          tipoResultado: resultType,
+          valorNumero: Number.isFinite(numeric) ? numeric : null,
+          valorTexto: value,
+          unidade: unit || null,
+        },
+      });
+      toast.success("Resultado registrado");
+      if (rankingEnabled) {
+        const r = await fetchRanking({ data: { sessaoId, blocoId: bloco?.id ?? null } });
+        setRankData({ posicao: r?.posicao ?? null, total: r?.total ?? 0 });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Não foi possível registrar o resultado");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-black/5">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <p className="text-[10px] font-extrabold tracking-[0.12em] text-black/45 uppercase">Registrar resultado</p>
+          <p className="text-[11px] text-black/55">{resultType}{unit ? ` · ${unit}` : ""}</p>
+        </div>
+        {rankingEnabled && <Trophy className="h-4 w-4 text-[#0033FF]" />}
+      </div>
+      <div className="mt-2 flex gap-2">
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={resultType === "Tempo" ? "Ex: 18:42 ou 18.70" : "Digite seu resultado"}
+          className="flex-1 rounded-xl bg-black/[0.04] ring-1 ring-black/5 px-3 py-2 text-[13px] font-semibold text-black outline-none"
+        />
+        <button type="button" onClick={submit} disabled={saving || !value.trim()} className="rounded-xl bg-[#0033FF] text-white px-3 py-2 text-[12px] font-extrabold disabled:opacity-50">
+          {saving ? "..." : "Salvar"}
+        </button>
+      </div>
+      {rankData && rankingEnabled && (
+        <p className="mt-2 text-[11px] font-semibold text-[#0033FF]">
+          {rankData.posicao ? `#${rankData.posicao} de ${rankData.total} atletas` : `${rankData.total} resultados no ranking`}
+        </p>
+      )}
     </div>
   );
 }
