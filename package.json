@@ -81,7 +81,9 @@
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^3.24.2",
-    "nitro": "3.0.260603-beta"
+    "nitro": "3.0.260603-beta",
+    "firebase": "^12.19.0",
+    "firebase-admin": "^14.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

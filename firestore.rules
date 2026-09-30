@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function crmUser() {
+      return get(/databases/$(database)/documents/usuarios_crm/$(request.auth.uid));
+    }
+
+    function canEdit() {
+      return signedIn() &&
+        crmUser().data.ativo == true &&
+        (crmUser().data.perfil == "admin" || crmUser().data.perfil == "equipe");
+    }
+
+    match /usuarios_crm/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow update: if signedIn() && (request.auth.uid == uid || canEdit());
+      allow delete: if canEdit();
+    }
+
+    match /{collection}/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if canEdit();
+    }
+  }
+}
