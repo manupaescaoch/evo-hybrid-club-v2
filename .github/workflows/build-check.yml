@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/hybrid-workout-builder
+      - feature/firebase-migration
   workflow_dispatch:
 
 jobs:
@@ -15,5 +16,5 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npm run build
