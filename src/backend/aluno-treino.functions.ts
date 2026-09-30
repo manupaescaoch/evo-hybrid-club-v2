@@ -14,6 +14,15 @@ export type AlunoTreinoBloco = {
   series: string | null;
   distancia_serie: string | null;
   recuperacao: string | null;
+  formato?: string | null;
+  prescricao?: string | null;
+  orientacoes?: string | null;
+  resultado_habilitado?: boolean;
+  tipo_resultado?: string | null;
+  unidade_resultado?: string | null;
+  ranking_habilitado?: boolean;
+  criterio_ranking?: string | null;
+  visibilidade_ranking?: Record<string, boolean> | null;
 };
 
 export type AlunoTreinoSessao = {
@@ -29,6 +38,12 @@ export type AlunoTreinoSessao = {
   objetivo: string | null;
   observacao: string | null;
   executada: boolean;
+  categoria?: string | null;
+  unidade?: string | null;
+  resultado_geral_habilitado?: boolean;
+  resultado_geral_tipo?: string | null;
+  resultado_geral_unidade?: string | null;
+  resultado_geral_criterio?: string | null;
   blocos: AlunoTreinoBloco[];
 };
 
@@ -58,7 +73,7 @@ export const getSemanaTreinoAluno = createServerFn({ method: "POST" })
     const { data: sessoes, error: sessoesError } = await sb
       .from("corrida_sessoes")
       .select(
-        "id, microciclo_id, data, ordem_no_dia, tipo, nome, duracao_min, distancia_km, pace_alvo, zona_fc, objetivo, observacao, executada, corrida_sessao_blocos(id, ordem, tipo, nome, descricao, duracao_min, pace, zona, series, distancia_serie, recuperacao)",
+        "id, microciclo_id, data, ordem_no_dia, tipo, nome, duracao_min, distancia_km, pace_alvo, zona_fc, objetivo, observacao, executada, categoria, unidade, resultado_geral_habilitado, resultado_geral_tipo, resultado_geral_unidade, resultado_geral_criterio, corrida_sessao_blocos(id, ordem, tipo, nome, descricao, duracao_min, pace, zona, series, distancia_serie, recuperacao, formato, prescricao, orientacoes, resultado_habilitado, tipo_resultado, unidade_resultado, ranking_habilitado, criterio_ranking, visibilidade_ranking, ativo)",
       )
       .in("microciclo_id", microIds)
       .gte("data", data.inicio)
@@ -79,7 +94,9 @@ export const getSemanaTreinoAluno = createServerFn({ method: "POST" })
         ...s,
         microciclo_id: undefined,
         executada: false,
-        blocos: [...(s.corrida_sessao_blocos ?? [])].sort((a: any, b: any) => a.ordem - b.ordem),
+        blocos: [...(s.corrida_sessao_blocos ?? [])]
+          .filter((b: any) => b.ativo !== false)
+          .sort((a: any, b: any) => a.ordem - b.ordem),
         corrida_sessao_blocos: undefined,
       })),
     };

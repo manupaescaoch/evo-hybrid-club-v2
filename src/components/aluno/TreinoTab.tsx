@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, User, Library } from "lucide-react";
+import { Dumbbell, User, Library, Blocks } from "lucide-react";
 import { PerfilCorridaTab } from "./treino/PerfilCorridaTab";
 import { PlanoSemanalTab } from "./treino/PlanoSemanalTab";
 import { BibliotecaSessoesTab } from "./treino/BibliotecaSessoesTab";
+import { HybridWorkoutBuilder } from "./treino/HybridWorkoutBuilder";
 import type { PerfilCorrida } from "@/lib/corrida-zonas";
 
 export function TreinoTab({
@@ -20,8 +21,11 @@ export function TreinoTab({
   });
 
   return (
-    <Tabs defaultValue="plano" className="w-full">
-      <TabsList className="grid grid-cols-3 w-full max-w-md">
+    <Tabs defaultValue="builder" className="w-full">
+      <TabsList className="grid grid-cols-4 w-full max-w-xl">
+        <TabsTrigger value="builder" className="gap-1.5">
+          <Blocks className="h-3.5 w-3.5" /> Criar treino
+        </TabsTrigger>
         <TabsTrigger value="plano" className="gap-1.5">
           <Dumbbell className="h-3.5 w-3.5" /> Plano
         </TabsTrigger>
@@ -32,6 +36,10 @@ export function TreinoTab({
           <Library className="h-3.5 w-3.5" /> Biblioteca
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="builder" className="mt-5">
+        <HybridWorkoutBuilder alunoId={alunoId} />
+      </TabsContent>
 
       <TabsContent value="plano" className="mt-5">
         <PlanoSemanalTab alunoId={alunoId} perfil={perfil} />
