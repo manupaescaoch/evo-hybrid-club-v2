@@ -505,16 +505,25 @@ function BlockResult({
     if (!value.trim()) return;
     setSaving(true);
     try {
-      const normalized = value.replace(",", ".");
-      const numeric = Number(normalized);
+      const normalized = value.trim().replace(",", ".");
+      let numeric: number | null = null;
+      if (resultType === "Tempo" && normalized.includes(":")) {
+        const parts = normalized.split(":").map(Number);
+        if (parts.every((n) => Number.isFinite(n))) {
+          numeric = parts.reduce((acc, n) => acc * 60 + n, 0);
+        }
+      } else {
+        const parsed = Number(normalized);
+        numeric = Number.isFinite(parsed) ? parsed : null;
+      }
       await saveResult({
         data: {
           sessaoId,
           blocoId: bloco?.id ?? null,
           tipoResultado: resultType,
-          valorNumero: Number.isFinite(numeric) ? numeric : null,
+          valorNumero: numeric,
           valorTexto: value,
-          unidade: unit || null,
+          unidade: unit || (resultType === "Tempo" ? "s" : null),
         },
       });
       toast.success("Resultado registrado");
