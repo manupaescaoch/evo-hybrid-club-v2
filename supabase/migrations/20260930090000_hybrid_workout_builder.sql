@@ -3,6 +3,8 @@
 
 alter table public.corrida_sessoes
   add column if not exists categoria text,
+  add column if not exists unidade text,
+  add column if not exists treinador text,
   add column if not exists status text not null default 'rascunho',
   add column if not exists resultado_geral_habilitado boolean not null default false,
   add column if not exists resultado_geral_tipo text,
