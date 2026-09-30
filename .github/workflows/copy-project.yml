@@ -1,4 +1,5 @@
 name: Copy EVO Hybrid Club
+# sync-current
 
 on:
   push:
