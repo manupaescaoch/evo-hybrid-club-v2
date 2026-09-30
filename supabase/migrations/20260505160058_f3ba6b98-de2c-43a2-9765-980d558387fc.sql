@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.buscar_aluno_por_telefone(text) TO anon, authenticated;

@@ -1,0 +1,11 @@
+DO $$
+BEGIN
+  BEGIN
+    EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.jobs_disparos';
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+  BEGIN
+    EXECUTE 'ALTER TABLE public.jobs_disparos REPLICA IDENTITY FULL';
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+END $$;

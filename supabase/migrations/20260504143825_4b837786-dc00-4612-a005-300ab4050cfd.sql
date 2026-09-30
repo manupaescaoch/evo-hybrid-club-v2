@@ -1,0 +1,3 @@
+UPDATE public.alunos SET whatsapp = '5581986374658', data_anamnese = COALESCE(data_anamnese, '2026-05-04 13:41:41.994+00'::timestamptz), status = CASE WHEN status = 'aguardando_anamnese' THEN 'anamnese_recebida' ELSE status END WHERE id = '8688cef1-0a17-4774-8cda-567d196ca469';
+
+INSERT INTO public.historico_status (aluno_id, status_de, status_para, alterado_por) SELECT '8688cef1-0a17-4774-8cda-567d196ca469', 'aguardando_anamnese', 'anamnese_recebida', 'sistema' WHERE NOT EXISTS (SELECT 1 FROM public.historico_status WHERE aluno_id='8688cef1-0a17-4774-8cda-567d196ca469' AND status_para='anamnese_recebida');

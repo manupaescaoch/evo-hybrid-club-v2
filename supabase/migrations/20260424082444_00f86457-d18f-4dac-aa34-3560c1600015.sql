@@ -1,0 +1,1 @@
+ALTER TYPE public.formulario_tipo ADD VALUE IF NOT EXISTS 'feedback_mensal';

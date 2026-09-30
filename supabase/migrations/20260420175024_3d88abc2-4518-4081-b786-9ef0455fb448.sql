@@ -1,0 +1,1 @@
+ALTER TABLE public.usuarios_crm ADD COLUMN IF NOT EXISTS telefone text;

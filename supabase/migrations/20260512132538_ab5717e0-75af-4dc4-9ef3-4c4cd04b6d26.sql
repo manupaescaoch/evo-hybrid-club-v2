@@ -1,0 +1,1 @@
+ALTER TABLE public.conversas_estado ADD COLUMN IF NOT EXISTS nome_contato text;

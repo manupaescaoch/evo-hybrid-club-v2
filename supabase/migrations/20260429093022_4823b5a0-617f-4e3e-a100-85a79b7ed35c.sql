@@ -1,0 +1,1 @@
+UPDATE public.alunos SET email='kethilly_mirely@hotmail.com', atualizado_em=now() WHERE whatsapp='5581989348678';

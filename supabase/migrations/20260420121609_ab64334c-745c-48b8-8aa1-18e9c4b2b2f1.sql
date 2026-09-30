@@ -1,0 +1,1 @@
+ALTER TABLE public.mensagens_treino ADD COLUMN IF NOT EXISTS enviado_whatsapp_em timestamptz;

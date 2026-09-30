@@ -1,0 +1,1 @@
+UPDATE jobs_disparos SET agendado_para = now() - interval '1 hour' WHERE id = '9a73b5cf-267f-4348-bce3-d99f8662a491'

@@ -1,0 +1,5 @@
+UPDATE public.workflow_config SET valor = E'Olá, {nome}! Tudo certo?\n\nChegou a hora do seu feedback quinzenal.\n\nEsse é o momento de entender como foram seus últimos 15 dias, avaliar treino, dieta, rotina e fazer os ajustes necessários pra você continuar evoluindo com consistência.\n\nResponde rapidinho pelo link abaixo:\n\n{link}', atualizado_em = now() WHERE chave = 'MSG_LINK_QUINZENAL';
+
+UPDATE public.workflow_config SET valor = E'Olá, {nome}! Tudo certo?\n\nChegou a hora do seu feedback mensal.\n\nEsse é o momento de analisar sua evolução no mês, revisar treino, dieta, rotina e ajustar o que for necessário pra próxima fase do planejamento.\n\nResponde com atenção pelo link abaixo:\n\n{link}', atualizado_em = now() WHERE chave = 'MSG_LINK_MENSAL';
+
+DELETE FROM public.workflow_config WHERE chave = 'MSG_AVISO_NOVO_PLANO';

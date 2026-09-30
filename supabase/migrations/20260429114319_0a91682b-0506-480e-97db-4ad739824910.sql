@@ -1,0 +1,1 @@
+ALTER TYPE public.prompt_tipo ADD VALUE IF NOT EXISTS 'check_shape_mensal';

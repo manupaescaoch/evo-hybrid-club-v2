@@ -1,0 +1,1 @@
+UPDATE public.alunos SET nome = upper(nome) WHERE nome IS NOT NULL AND nome <> upper(nome);

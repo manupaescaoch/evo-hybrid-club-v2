@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trg_criar_entrega_dia ON public.alunos;

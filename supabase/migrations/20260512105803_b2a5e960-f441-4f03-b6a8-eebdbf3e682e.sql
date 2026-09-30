@@ -1,0 +1,1 @@
+ALTER TABLE public.conversas_mensagens ADD COLUMN IF NOT EXISTS midia_transcricao text;
