@@ -19,6 +19,7 @@ alter table public.corrida_sessao_blocos
   add column if not exists ranking_habilitado boolean not null default false,
   add column if not exists criterio_ranking text,
   add column if not exists visibilidade_ranking jsonb not null default '{}'::jsonb,
+  add column if not exists ativo boolean not null default true,
   add column if not exists atualizado_em timestamptz not null default now();
 
 -- Keep old content visible in the new builder.
