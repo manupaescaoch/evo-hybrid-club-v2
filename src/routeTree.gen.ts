@@ -19,14 +19,12 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlunoIndexRouteImport } from './routes/aluno.index'
 import { Route as FormulariosTokenRouteImport } from './routes/formularios.$token'
-import { Route as AlunoTrocasRouteImport } from './routes/aluno.trocas'
 import { Route as AlunoTrocarSenhaRouteImport } from './routes/aluno.trocar-senha'
 import { Route as AlunoTreinoRouteImport } from './routes/aluno.treino'
 import { Route as AlunoRankingRouteImport } from './routes/aluno.ranking'
 import { Route as AlunoPerfilRouteImport } from './routes/aluno.perfil'
 import { Route as AlunoLoginRouteImport } from './routes/aluno.login'
 import { Route as AlunoEsqueciSenhaRouteImport } from './routes/aluno.esqueci-senha'
-import { Route as AlunoDietaRouteImport } from './routes/aluno.dieta'
 import { Route as AlunoComunidadeRouteImport } from './routes/aluno.comunidade'
 import { Route as AppVisaoGeralRouteImport } from './routes/_app.visao-geral'
 import { Route as AppRelatoriosRouteImport } from './routes/_app.relatorios'
@@ -122,11 +120,6 @@ const FormulariosTokenRoute = FormulariosTokenRouteImport.update({
   path: '/formularios/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AlunoTrocasRoute = AlunoTrocasRouteImport.update({
-  id: '/trocas',
-  path: '/trocas',
-  getParentRoute: () => AlunoRoute,
-} as any)
 const AlunoTrocarSenhaRoute = AlunoTrocarSenhaRouteImport.update({
   id: '/trocar-senha',
   path: '/trocar-senha',
@@ -155,11 +148,6 @@ const AlunoLoginRoute = AlunoLoginRouteImport.update({
 const AlunoEsqueciSenhaRoute = AlunoEsqueciSenhaRouteImport.update({
   id: '/esqueci-senha',
   path: '/esqueci-senha',
-  getParentRoute: () => AlunoRoute,
-} as any)
-const AlunoDietaRoute = AlunoDietaRouteImport.update({
-  id: '/dieta',
-  path: '/dieta',
   getParentRoute: () => AlunoRoute,
 } as any)
 const AlunoComunidadeRoute = AlunoComunidadeRouteImport.update({
@@ -421,14 +409,12 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AppRelatoriosRoute
   '/visao-geral': typeof AppVisaoGeralRoute
   '/aluno/comunidade': typeof AlunoComunidadeRoute
-  '/aluno/dieta': typeof AlunoDietaRoute
   '/aluno/esqueci-senha': typeof AlunoEsqueciSenhaRoute
   '/aluno/login': typeof AlunoLoginRoute
   '/aluno/perfil': typeof AlunoPerfilRoute
   '/aluno/ranking': typeof AlunoRankingRoute
   '/aluno/treino': typeof AlunoTreinoRoute
   '/aluno/trocar-senha': typeof AlunoTrocarSenhaRoute
-  '/aluno/trocas': typeof AlunoTrocasRoute
   '/formularios/$token': typeof FormulariosTokenRoute
   '/aluno/': typeof AlunoIndexRoute
   '/alunos/$id': typeof AppAlunosIdRoute
@@ -481,14 +467,12 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AppRelatoriosRoute
   '/visao-geral': typeof AppVisaoGeralRoute
   '/aluno/comunidade': typeof AlunoComunidadeRoute
-  '/aluno/dieta': typeof AlunoDietaRoute
   '/aluno/esqueci-senha': typeof AlunoEsqueciSenhaRoute
   '/aluno/login': typeof AlunoLoginRoute
   '/aluno/perfil': typeof AlunoPerfilRoute
   '/aluno/ranking': typeof AlunoRankingRoute
   '/aluno/treino': typeof AlunoTreinoRoute
   '/aluno/trocar-senha': typeof AlunoTrocarSenhaRoute
-  '/aluno/trocas': typeof AlunoTrocasRoute
   '/formularios/$token': typeof FormulariosTokenRoute
   '/aluno': typeof AlunoIndexRoute
   '/alunos/$id': typeof AppAlunosIdRoute
@@ -547,14 +531,12 @@ export interface FileRoutesById {
   '/_app/relatorios': typeof AppRelatoriosRoute
   '/_app/visao-geral': typeof AppVisaoGeralRoute
   '/aluno/comunidade': typeof AlunoComunidadeRoute
-  '/aluno/dieta': typeof AlunoDietaRoute
   '/aluno/esqueci-senha': typeof AlunoEsqueciSenhaRoute
   '/aluno/login': typeof AlunoLoginRoute
   '/aluno/perfil': typeof AlunoPerfilRoute
   '/aluno/ranking': typeof AlunoRankingRoute
   '/aluno/treino': typeof AlunoTreinoRoute
   '/aluno/trocar-senha': typeof AlunoTrocarSenhaRoute
-  '/aluno/trocas': typeof AlunoTrocasRoute
   '/formularios/$token': typeof FormulariosTokenRoute
   '/aluno/': typeof AlunoIndexRoute
   '/_app/alunos/$id': typeof AppAlunosIdRoute
@@ -613,14 +595,12 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/visao-geral'
     | '/aluno/comunidade'
-    | '/aluno/dieta'
     | '/aluno/esqueci-senha'
     | '/aluno/login'
     | '/aluno/perfil'
     | '/aluno/ranking'
     | '/aluno/treino'
     | '/aluno/trocar-senha'
-    | '/aluno/trocas'
     | '/formularios/$token'
     | '/aluno/'
     | '/alunos/$id'
@@ -673,14 +653,12 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/visao-geral'
     | '/aluno/comunidade'
-    | '/aluno/dieta'
     | '/aluno/esqueci-senha'
     | '/aluno/login'
     | '/aluno/perfil'
     | '/aluno/ranking'
     | '/aluno/treino'
     | '/aluno/trocar-senha'
-    | '/aluno/trocas'
     | '/formularios/$token'
     | '/aluno'
     | '/alunos/$id'
@@ -738,14 +716,12 @@ export interface FileRouteTypes {
     | '/_app/relatorios'
     | '/_app/visao-geral'
     | '/aluno/comunidade'
-    | '/aluno/dieta'
     | '/aluno/esqueci-senha'
     | '/aluno/login'
     | '/aluno/perfil'
     | '/aluno/ranking'
     | '/aluno/treino'
     | '/aluno/trocar-senha'
-    | '/aluno/trocas'
     | '/formularios/$token'
     | '/aluno/'
     | '/_app/alunos/$id'
@@ -880,13 +856,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FormulariosTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/aluno/trocas': {
-      id: '/aluno/trocas'
-      path: '/trocas'
-      fullPath: '/aluno/trocas'
-      preLoaderRoute: typeof AlunoTrocasRouteImport
-      parentRoute: typeof AlunoRoute
-    }
     '/aluno/trocar-senha': {
       id: '/aluno/trocar-senha'
       path: '/trocar-senha'
@@ -927,13 +896,6 @@ declare module '@tanstack/react-router' {
       path: '/esqueci-senha'
       fullPath: '/aluno/esqueci-senha'
       preLoaderRoute: typeof AlunoEsqueciSenhaRouteImport
-      parentRoute: typeof AlunoRoute
-    }
-    '/aluno/dieta': {
-      id: '/aluno/dieta'
-      path: '/dieta'
-      fullPath: '/aluno/dieta'
-      preLoaderRoute: typeof AlunoDietaRouteImport
       parentRoute: typeof AlunoRoute
     }
     '/aluno/comunidade': {
@@ -1372,27 +1334,23 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AlunoRouteChildren {
   AlunoComunidadeRoute: typeof AlunoComunidadeRoute
-  AlunoDietaRoute: typeof AlunoDietaRoute
   AlunoEsqueciSenhaRoute: typeof AlunoEsqueciSenhaRoute
   AlunoLoginRoute: typeof AlunoLoginRoute
   AlunoPerfilRoute: typeof AlunoPerfilRoute
   AlunoRankingRoute: typeof AlunoRankingRoute
   AlunoTreinoRoute: typeof AlunoTreinoRoute
   AlunoTrocarSenhaRoute: typeof AlunoTrocarSenhaRoute
-  AlunoTrocasRoute: typeof AlunoTrocasRoute
   AlunoIndexRoute: typeof AlunoIndexRoute
 }
 
 const AlunoRouteChildren: AlunoRouteChildren = {
   AlunoComunidadeRoute: AlunoComunidadeRoute,
-  AlunoDietaRoute: AlunoDietaRoute,
   AlunoEsqueciSenhaRoute: AlunoEsqueciSenhaRoute,
   AlunoLoginRoute: AlunoLoginRoute,
   AlunoPerfilRoute: AlunoPerfilRoute,
   AlunoRankingRoute: AlunoRankingRoute,
   AlunoTreinoRoute: AlunoTreinoRoute,
   AlunoTrocarSenhaRoute: AlunoTrocarSenhaRoute,
-  AlunoTrocasRoute: AlunoTrocasRoute,
   AlunoIndexRoute: AlunoIndexRoute,
 }
 

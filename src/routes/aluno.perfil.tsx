@@ -210,7 +210,7 @@ function AlunoPerfil() {
     return {
       dieta: Math.round((dietaOk / 7) * 100),
       treino: Math.round((treinoOk / 7) * 100),
-      geral: Math.round(((dietaOk + treinoOk) / 14) * 100),
+      geral: Math.round((treinoOk / 7) * 100),
     };
   }, [entregas, ult7]);
 
@@ -265,7 +265,6 @@ function AlunoPerfil() {
     });
     entregas.slice(0, 6).forEach((e: any) => {
       if (e.treino_entregue) items.push({ d: shortDate(e.data_referencia), t: "WOD entregue", s: "Plano de WOD atualizado", icon: Dumbbell, color: "#0F172A", ts: new Date(e.data_referencia).getTime() });
-      if (e.dieta_entregue) items.push({ d: shortDate(e.data_referencia), t: "Dieta entregue", s: "Plano alimentar atualizado", icon: Utensils, color: "#F59E0B", ts: new Date(e.data_referencia).getTime() });
     });
     feedbacks.slice(0, 4).forEach((f: any) => {
       items.push({
@@ -480,7 +479,6 @@ function AlunoPerfil() {
             <PerfCell label="Sequência" value={`${streak}`} sub="dias" icon={Flame} color={RED} />
             <PerfCell label="Aderência 7d" value={`${aderencia7.geral}%`} color="#10B981" ring={aderencia7.geral} />
             <PerfCell label="WOD 7d" value={`${aderencia7.treino}%`} icon={Dumbbell} color="#0F172A" />
-            <PerfCell label="Dieta 7d" value={`${aderencia7.dieta}%`} icon={Utensils} color="#10B981" />
             <PerfCell label="Check-ins 7d" value={`${ult7checkins.length}/7`} icon={BadgeCheck} color="#0EA5E9" />
             <PerfCell label="IMC" value={imc != null ? String(imc) : "—"} icon={Heart} color={RED} />
           </div>
@@ -638,20 +636,6 @@ function AlunoPerfil() {
           )}
         </section>
 
-        {/* DIETA */}
-        <section className="rounded-3xl bg-white border border-black/5 p-4 shadow-[0_4px_20px_-12px_rgba(0,0,0,0.08)]">
-          <h3 className="text-[14px] font-bold mb-3">Dieta</h3>
-          {!data?.dieta ? (
-            <EmptyState text="Aguardando sua dieta." />
-          ) : (
-            <div className="text-[12px] text-zinc-700">
-              <div className="font-bold">{data.dieta.nome}</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">
-                {data.dieta.meta_kcal ? `${data.dieta.meta_kcal} kcal · ` : ""}atualizada {fmtDate(data.dieta.atualizado_em)}
-              </div>
-            </div>
-          )}
-        </section>
 
         {/* INFORMAÇÕES GERAIS */}
         <section className="rounded-3xl bg-white border border-black/5 p-4 shadow-[0_4px_20px_-12px_rgba(0,0,0,0.08)]">

@@ -22,7 +22,6 @@ import {
 import { useAlunoSession } from "@/lib/aluno-session";
 import { useAlunoDashboard, triggerAlunoDashboardRefetch } from "@/lib/aluno-dashboard-store";
 import { useServerFn } from "@tanstack/react-start";
-import { getDietaAluno } from "@/backend/aluno-dieta.functions";
 import { getSemanaTreinoAluno, type AlunoTreinoSessao } from "@/backend/aluno-treino.functions";
 import { registrarAgua } from "@/backend/aluno-kpis.functions";
 import { SCORE_DIARIO, SCORE_META_SEMANAL, somarScoreJanela } from "@/lib/aluno-score";
@@ -31,7 +30,7 @@ export const Route = createFileRoute("/aluno/")({
   head: () => ({
     meta: [
       { title: "Início — App do Aluno | EVO HYBRID CLUB" },
-      { name: "description", content: "Sua página inicial no EVO HYBRID CLUB: score do dia, check-in diário, dieta, WODs e evolução em um só lugar." },
+      { name: "description", content: "Sua página inicial no EVO HYBRID CLUB: score do dia, check-in diário, WODs e evolução em um só lugar." },
     ],
   }),
   component: AlunoInicio,
@@ -101,14 +100,7 @@ function AlunoInicio() {
   const { session } = useAlunoSession();
   const primeiroNome = (session?.nome ?? "Aluno").split(" ")[0];
   const { data, loading } = useAlunoDashboard();
-  const fetchDieta = useServerFn(getDietaAluno);
   const fnRegistrarAgua = useServerFn(registrarAgua);
-  
-
-  const [refeicoesTotal, setRefeicoesTotal] = useState<number>(0);
-  const [metaKcal, setMetaKcal] = useState<number | null>(null);
-  const [totalKcal, setTotalKcal] = useState<number | null>(null);
-  const [refeicoesKcal, setRefeicoesKcal] = useState<Record<string, number>>({});
 
   const [scoreToast, setScoreToast] = useState<number | null>(null);
   const aguaMlServer = (data as any)?.agua_ml_hoje ?? 0;
@@ -117,14 +109,6 @@ function AlunoInicio() {
     setAguaOptimistic(null);
   }, [aguaMlServer]);
   const aguaMl = aguaOptimistic ?? aguaMlServer;
-  const refeicoesFeitas = ((data as any)?.refeicoes_hoje ?? []).length as number;
-  const refeicoesHojeIds: string[] = ((data as any)?.refeicoes_hoje ?? [])
-    .map((r: any) => r?.refeicao_id)
-    .filter((x: any): x is string => !!x);
-  const kcalConsumido = refeicoesHojeIds.reduce(
-    (s, id) => s + (refeicoesKcal[id] ?? 0),
-    0,
-  );
 
   const ajustarAgua = (delta: number) => {
     if (!session?.id) return;
@@ -137,29 +121,6 @@ function AlunoInicio() {
       .then(() => triggerAlunoDashboardRefetch())
       .catch(() => setAguaOptimistic(null));
   };
-
-  useEffect(() => {
-    if (!session?.id) return;
-    let cancel = false;
-    fetchDieta()
-      .then((r) => {
-        if (cancel) return;
-        setRefeicoesTotal(r.plano?.refeicoes.length ?? 0);
-        setMetaKcal(r.plano?.meta_kcal ?? null);
-        const kcalCalc = r.plano?.totais?.kcal ?? 0;
-        const kcalDesc = r.plano?.totais_descricao?.kcal ?? 0;
-        setTotalKcal(kcalCalc > 0 ? kcalCalc : kcalDesc > 0 ? kcalDesc : null);
-        const map: Record<string, number> = {};
-        for (const ref of r.plano?.refeicoes ?? []) {
-          map[ref.id] = Number(ref.totais?.kcal ?? 0);
-        }
-        setRefeicoesKcal(map);
-      })
-      .catch(() => {});
-    return () => {
-      cancel = true;
-    };
-  }, [session?.id, fetchDieta]);
 
   const checkins = data?.checkins ?? [];
   const hojeStr = new Date().toISOString().slice(0, 10);
@@ -190,21 +151,6 @@ function AlunoInicio() {
   const aguaMetaL = aguaMetaMl ? aguaMetaMl / 1000 : null;
   const aguaAtualL = aguaMl / 1000;
   const aguaPct = aguaMetaMl ? Math.min(100, Math.round((aguaMl / aguaMetaMl) * 100)) : 0;
-  const metaKcalRef = metaKcal ?? totalKcal ?? null;
-  const kcalConsumidoArred = Math.round(kcalConsumido);
-  const kcalLabel = metaKcalRef
-    ? `${Math.round(metaKcalRef).toLocaleString("pt-BR")}`
-    : kcalConsumidoArred > 0
-    ? `${kcalConsumidoArred.toLocaleString("pt-BR")}`
-    : "—";
-  const kcalSubtitle = metaKcalRef
-    ? `kcal do plano`
-    : kcalConsumidoArred > 0
-    ? "kcal consumidas"
-    : "sem meta";
-
-  const dietaPct = refeicoesTotal > 0 ? Math.round((refeicoesFeitas / refeicoesTotal) * 100) : 0;
-
   const showScore = (v: number) => {
     setScoreToast(v);
     setTimeout(() => setScoreToast(null), 1500);
@@ -214,7 +160,6 @@ function AlunoInicio() {
     { label: "Check-in", icon: Check, color: RED, done: !!checkinHoje },
     { label: "Sono", icon: Moon, color: "#7B5BFF", done: !!sono },
     { label: "Humor", icon: Smile, color: "#22C55E", done: checkinHoje?.humor != null },
-    { label: "Dieta", icon: Utensils, color: "#22C55E", done: false },
   ];
   const focosFeitos = focos.filter((f) => f.done).length;
 
@@ -403,17 +348,6 @@ function AlunoInicio() {
             subtitle={humor ? "" : "registre hoje"}
             check={!!humor}
             index={2}
-          />
-          <MetricCard
-            label="Calorias"
-            icon={Flame}
-            color={RED}
-            bg="bg-[#0033FF]/10"
-            value={kcalLabel}
-            subtitle={kcalSubtitle}
-            ringPct={dietaPct}
-            fillIcon
-            index={3}
           />
           <MetricCard
             label="Pace médio"
